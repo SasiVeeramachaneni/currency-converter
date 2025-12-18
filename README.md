@@ -179,11 +179,11 @@ View all available currencies.
 
 ## A2A Protocol Integration
 
-This agent implements the [A2A Protocol](https://a2a-protocol.org), enabling:
+This agent implements the [A2A Protocol](https://a2a-protocol.org) v3.1.1, enabling:
 
 - **Discovery**: Other agents can find this agent via the agent card
 - **Interoperability**: Standard communication protocol for agent-to-agent interaction
-- **Task Management**: Asynchronous task execution with state tracking
+- **Message-Based Communication**: Uses Message objects (not Tasks) for responses
 - **Multi-Agent Collaboration**: Can be orchestrated with other A2A-compliant agents
 
 ## AWS Deployment
@@ -209,14 +209,36 @@ The deployment guide includes:
 
 ```
 currency-converter/
-├── main.py              # Standalone CLI interface
-├── a2a_server.py        # A2A protocol server
-├── requirements.txt     # Python dependencies
-├── .env                 # Environment variables (not in git)
-├── .env.example         # Example environment configuration
-├── .gitignore           # Git ignore rules
-└── README.md            # This file
+├── main.py                  # Standalone CLI interface
+├── a2a_server.py            # A2A protocol server
+├── test_message_output.py   # Test Message output format
+├── test_comprehensive.py    # Comprehensive integration tests
+├── requirements.txt         # Python dependencies
+├── .env                     # Environment variables (not in git)
+├── .env.example             # Example environment configuration
+├── .gitignore               # Git ignore rules
+├── README.md                # This file
+└── AWS_DEPLOYMENT.md        # AWS deployment guide
 ```
+
+### Testing
+
+Run the test suite to verify the agent is working correctly:
+
+```bash
+# Start the A2A server first
+python3 a2a_server.py
+
+# In another terminal, run tests
+python3 test_message_output.py      # Test Message output format
+python3 test_comprehensive.py       # Test all skills
+```
+
+The tests verify:
+- ✅ Agent returns Message objects (not Task objects)
+- ✅ Currency conversion works correctly
+- ✅ Exchange rate lookup functions properly
+- ✅ Currency listing returns all supported currencies
 
 ### Adding New Currency Pairs
 
