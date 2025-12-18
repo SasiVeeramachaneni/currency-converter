@@ -5,7 +5,7 @@ build:
     pre-build:
       - pip3 install --upgrade pip
     build:
-      - pip3 install --user -r requirements.txt
+      - pip3 install -t /app/packages -r requirements.txt
     post-build:
       - echo "Build completed successfully"
   runtime-version: 3.11
@@ -17,5 +17,5 @@ run:
   env:
     - name: PORT
       value: "8000"
-    - name: PYTHONUSERBASE
-      value: "/app/.local"
+    - name: PYTHONPATH
+      value: "/app/packages"
