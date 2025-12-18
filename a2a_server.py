@@ -16,16 +16,17 @@ from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
-from a2a.server.tasks import InMemoryTaskStore, TaskUpdater
+from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import (
     AgentCard,
     AgentCapabilities,
     AgentSkill,
+    Message,
     Part,
+    Role,
     TaskState,
     TextPart,
 )
-from a2a.utils import new_task
 
 # Load environment variables
 load_dotenv()
@@ -242,60 +243,42 @@ class CurrencyConverterExecutor(AgentExecutor):
     """A2A Agent Executor for the Currency Converter."""
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
-        """Execute the currency conversion request."""
-        # Get or create task
-        task = context.current_task
-        if not task:
-            if context.message is None:
-                raise ValueError("A message is required to create a new task")
-            task = new_task(context.message)
-            await event_queue.enqueue_event(task)
-
-        updater = TaskUpdater(event_queue, task.id, task.context_id)
-
+        """Execute the currency conversion request and return a Message."""
         try:
-            # Update status to working
-            await updater.update_status(
-                TaskState.working,
-                message=updater.new_agent_message(
-                    [Part(root=TextPart(text="Processing your currency request..."))]
-                ),
-            )
-
             # Get user input from the message
             user_input = context.get_user_input()
 
             # Run the OpenAI agent
-            result = await asyncio.to_thread(run_openai_agent, user_input)
+            response_text = await asyncio.to_thread(run_openai_agent, user_input)
 
-            # Add the result as an artifact
-            await updater.add_artifact(
-                [Part(root=TextPart(text=result))],
-                name="currency_conversion_result",
+            # Create and send a Message response (not a Task)
+            # Generate a unique message ID or use incoming message ID
+            import uuid
+            msg_id = f"response-{uuid.uuid4().hex[:8]}"
+            
+            response_message = Message(
+                role=Role.agent,
+                parts=[Part(root=TextPart(text=response_text))],
+                message_id=msg_id,
             )
-
-            # Complete the task
-            await updater.complete()
+            
+            await event_queue.enqueue_event(response_message)
 
         except Exception as e:
-            await updater.update_status(
-                TaskState.failed,
-                message=updater.new_agent_message(
-                    [Part(root=TextPart(text=f"Error: {str(e)}"))]
-                ),
+            # Create an error message response
+            import uuid
+            msg_id = f"error-{uuid.uuid4().hex[:8]}"
+            
+            error_message = Message(
+                role=Role.agent,
+                parts=[Part(root=TextPart(text=f"Error: {str(e)}"))],
+                message_id=msg_id,
             )
+            await event_queue.enqueue_event(error_message)
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
-        """Cancel the current task."""
-        task = context.current_task
-        if task:
-            updater = TaskUpdater(event_queue, task.id, task.context_id)
-            await updater.update_status(
-                TaskState.canceled,
-                message=updater.new_agent_message(
-                    [Part(root=TextPart(text="Task canceled"))]
-                ),
-            )
+        """Cancel operation - not applicable for simple message responses."""
+        pass
 
 
 def create_agent_card(host: str = "localhost", port: int = 8000) -> AgentCard:
