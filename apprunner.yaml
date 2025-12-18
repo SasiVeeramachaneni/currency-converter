@@ -8,6 +8,7 @@ build:
       - pip install -r requirements.txt
     post-build:
       - echo "Build completed successfully"
+  runtime-version: 3.11
 run:
   runtime-version: 3.11
   command: python3 apprunner_start.py
