@@ -3,9 +3,9 @@ runtime: python3
 build:
   commands:
     pre-build:
-      - pip install --upgrade pip
+      - pip3 install --upgrade pip
     build:
-      - pip install -r requirements.txt
+      - pip3 install -r requirements.txt
     post-build:
       - echo "Build completed successfully"
   runtime-version: 3.11
