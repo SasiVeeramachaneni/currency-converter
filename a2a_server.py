@@ -300,10 +300,16 @@ class CurrencyConverterExecutor(AgentExecutor):
 
 def create_agent_card(host: str = "localhost", port: int = 8000) -> AgentCard:
     """Create the Agent Card for the Currency Converter agent."""
+    # Use public URL from environment variable if available, otherwise construct from host:port
+    public_url = os.environ.get("PUBLIC_URL", f"http://{host}:{port}")
+    # Ensure URL ends with /
+    if not public_url.endswith("/"):
+        public_url += "/"
+    
     return AgentCard(
         name="Currency Converter Agent",
         description="An AI-powered agent that converts currencies, provides exchange rates, and lists supported currencies. Supports 20 major world currencies.",
-        url=f"http://{host}:{port}/",
+        url=public_url,
         version="1.0.0",
         capabilities=AgentCapabilities(
             streaming=False,

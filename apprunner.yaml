@@ -19,3 +19,5 @@ run:
       value: "8000"
     - name: PYTHONPATH
       value: "/app/packages"
+    - name: PUBLIC_URL
+      value: "https://eumw6mnmmx.us-east-1.awsapprunner.com"
