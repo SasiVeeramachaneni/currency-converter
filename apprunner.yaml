@@ -1,0 +1,18 @@
+version: 1.0
+runtime: python3
+build:
+  commands:
+    pre-build:
+      - pip install --upgrade pip
+    build:
+      - pip install -r requirements.txt
+    post-build:
+      - echo "Build completed successfully"
+run:
+  runtime-version: 3.11
+  command: python3 apprunner_start.py
+  network:
+    port: 8000
+  env:
+    - name: PORT
+      value: "8000"
